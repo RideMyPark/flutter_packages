@@ -1,3 +1,8 @@
+## [FORK] 0.6.0
+
+* Uses forked version of `google_maps_flutter_platform_interface`.
+  * Probably brakes the web version.
+
 ## 0.5.1
 
 * Adds padding support to `CameraUpdate.newLatLngBounds`. Issue [#122192](https://github.com/flutter/flutter/issues/122192).

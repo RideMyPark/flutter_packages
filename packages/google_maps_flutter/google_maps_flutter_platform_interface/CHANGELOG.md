@@ -1,3 +1,7 @@
+## [FORK] 2.3.0
+
+* Adds possibility to change animation duration for camera updates.
+
 ## 2.2.7
 
 * Removes obsolete null checks on non-nullable values.

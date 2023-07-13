@@ -181,9 +181,14 @@
     [self hide];
     result(nil);
   } else if ([call.method isEqualToString:@"camera#animate"]) {
+    NSNumber* animationDuration = call.arguments[@"animationDuration"];
+    if (![animationDuration isKindOfClass:[NSNull class]]) {
+      animationDuration = @([animationDuration floatValue] / 1000);
+    }
     [self
         animateWithCameraUpdate:[FLTGoogleMapJSONConversions
-                                    cameraUpdateFromChannelValue:call.arguments[@"cameraUpdate"]]];
+                                    cameraUpdateFromChannelValue:call.arguments[@"cameraUpdate"]]
+                                    animationDuration:animationDuration];
     result(nil);
   } else if ([call.method isEqualToString:@"camera#move"]) {
     [self moveWithCameraUpdate:[FLTGoogleMapJSONConversions
@@ -403,8 +408,14 @@
   self.mapView.hidden = YES;
 }
 
-- (void)animateWithCameraUpdate:(GMSCameraUpdate *)cameraUpdate {
+- (void)animateWithCameraUpdate:(GMSCameraUpdate *)cameraUpdate
+              animationDuration:(NSNumber*)duration {
+  [CATransaction begin];
+  if (![duration isKindOfClass:[NSNull class]]) {
+    [CATransaction setValue:duration forKey:kCATransactionAnimationDuration];
+  }
   [self.mapView animateWithCameraUpdate:cameraUpdate];
+  [CATransaction commit];
 }
 
 - (void)moveWithCameraUpdate:(GMSCameraUpdate *)cameraUpdate {

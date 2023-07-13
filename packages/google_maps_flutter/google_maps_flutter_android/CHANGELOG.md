@@ -1,6 +1,7 @@
-## NEXT
+## [FORK] 2.5.0
 
-* Fixes unawaited_futures violations.
+* Adds possibility to change animation duration for camera updates.
+* [REPO] Fixes unawaited_futures violations.
 
 ## 2.4.15
 

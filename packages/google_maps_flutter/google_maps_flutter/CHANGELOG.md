@@ -1,3 +1,7 @@
+## [FORK] 2.4.0
+
+* Adds possibility to change animation duration for camera updates.
+
 ## 2.3.1
 
 * Fixes a regression from 2.2.8 that could cause incorrect handling of a

@@ -23,22 +23,22 @@ dependencies:
     sdk: flutter
   google_maps_flutter_android:
     git:
-      url: https://github.com/Milvintsiss/packages.git
+      url: https://github.com/RideMyPark/flutter_packages.git
       ref: fork-google_maps-2.3.1
       path: packages/google_maps_flutter/google_maps_flutter_android
   google_maps_flutter_ios:
     git:
-      url: https://github.com/Milvintsiss/packages.git
+      url: https://github.com/RideMyPark/flutter_packages.git
       ref: fork-google_maps-2.3.1
       path: packages/google_maps_flutter/google_maps_flutter_ios
   google_maps_flutter_platform_interface:
     git:
-      url: https://github.com/Milvintsiss/packages.git
+      url: https://github.com/RideMyPark/flutter_packages.git
       ref: fork-google_maps-2.3.1
       path: packages/google_maps_flutter/google_maps_flutter_platform_interface
   google_maps_flutter_web:
     git:
-      url: https://github.com/Milvintsiss/packages.git
+      url: https://github.com/RideMyPark/flutter_packages.git
       ref: fork-google_maps-2.3.1
       path: packages/google_maps_flutter/google_maps_flutter_web
 

@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:flutter/services.dart' show BinaryMessenger;
+import 'package:meta/meta.dart' show immutable;
 
 import 'android_camera_camerax_flutter_api_impls.dart';
 import 'camerax_library.g.dart';
@@ -13,6 +16,7 @@ import 'recording.dart';
 /// Dart wrapping of PendingRecording CameraX class.
 ///
 /// See https://developer.android.com/reference/androidx/camera/video/PendingRecording
+@immutable
 class PendingRecording extends JavaObject {
   /// Creates a [PendingRecording] that is not automatically attached to
   /// a native object.
@@ -27,6 +31,11 @@ class PendingRecording extends JavaObject {
   }
 
   late final PendingRecordingHostApiImpl _api;
+
+  /// Stream that emits an event when the corresponding video recording is finalized.
+  static final StreamController<VideoRecordEvent>
+      videoRecordingEventStreamController =
+      StreamController<VideoRecordEvent>.broadcast();
 
   /// Starts the recording, making it an active recording.
   Future<Recording> start() {
@@ -97,5 +106,10 @@ class PendingRecordingFlutterApiImpl extends PendingRecordingFlutterApi {
         instanceManager: instanceManager,
       );
     });
+  }
+
+  @override
+  void onVideoRecordingEvent(VideoRecordEventData event) {
+    PendingRecording.videoRecordingEventStreamController.add(event.value);
   }
 }

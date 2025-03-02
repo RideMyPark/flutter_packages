@@ -3,36 +3,39 @@
 // found in the LICENSE file.
 
 import 'package:flutter/services.dart' show BinaryMessenger;
+import 'package:meta/meta.dart' show immutable;
 
 import 'camerax_library.g.dart';
 import 'instance_manager.dart';
 import 'java_object.dart';
+import 'resolution_selector.dart';
 import 'use_case.dart';
 
 /// Use case that provides a camera preview stream for display.
 ///
 /// See https://developer.android.com/reference/androidx/camera/core/Preview.
+@immutable
 class Preview extends UseCase {
   /// Creates a [Preview].
   Preview(
       {BinaryMessenger? binaryMessenger,
       InstanceManager? instanceManager,
-      this.targetRotation,
-      this.targetResolution})
+      this.initialTargetRotation,
+      this.resolutionSelector})
       : super.detached(
             binaryMessenger: binaryMessenger,
             instanceManager: instanceManager) {
     _api = PreviewHostApiImpl(
         binaryMessenger: binaryMessenger, instanceManager: instanceManager);
-    _api.createFromInstance(this, targetRotation, targetResolution);
+    _api.createFromInstance(this, initialTargetRotation, resolutionSelector);
   }
 
   /// Constructs a [Preview] that is not automatically attached to a native object.
   Preview.detached(
       {BinaryMessenger? binaryMessenger,
       InstanceManager? instanceManager,
-      this.targetRotation,
-      this.targetResolution})
+      this.initialTargetRotation,
+      this.resolutionSelector})
       : super.detached(
             binaryMessenger: binaryMessenger,
             instanceManager: instanceManager) {
@@ -43,10 +46,27 @@ class Preview extends UseCase {
   late final PreviewHostApiImpl _api;
 
   /// Target rotation of the camera used for the preview stream.
-  final int? targetRotation;
+  ///
+  /// Should be specified in terms of one of the [Surface]
+  /// rotation constants that represents the counter-clockwise degrees of
+  /// rotation relative to [DeviceOrientation.portraitUp].
+  ///
+  // TODO(camsim99): Remove this parameter. https://github.com/flutter/flutter/issues/140664
+  final int? initialTargetRotation;
 
   /// Target resolution of the camera preview stream.
-  final ResolutionInfo? targetResolution;
+  ///
+  /// If not set, this [UseCase] will default to the behavior described in:
+  /// https://developer.android.com/reference/androidx/camera/core/Preview.Builder#setResolutionSelector(androidx.camera.core.resolutionselector.ResolutionSelector).
+  final ResolutionSelector? resolutionSelector;
+
+  /// Dynamically sets the target rotation of this instance.
+  ///
+  /// [rotation] should be specified in terms of one of the [Surface]
+  /// rotation constants that represents the counter-clockwise degrees of
+  /// rotation relative to [DeviceOrientation.portraitUp].
+  Future<void> setTargetRotation(int rotation) =>
+      _api.setTargetRotationFromInstances(this, rotation);
 
   /// Sets the surface provider for the preview stream.
   ///
@@ -65,6 +85,12 @@ class Preview extends UseCase {
   /// Retrieves the selected resolution information of this [Preview].
   Future<ResolutionInfo> getResolutionInfo() {
     return _api.getResolutionInfoFromInstance(this);
+  }
+
+  /// Returns whether or not the Android surface producer automatically handles
+  /// correcting the rotation of camera previews for the device this plugin runs on.
+  Future<bool> surfaceProducerHandlesCropAndRotation() {
+    return _api.surfaceProducerHandlesCropAndRotationFromInstance();
   }
 }
 
@@ -90,17 +116,28 @@ class PreviewHostApiImpl extends PreviewHostApi {
 
   /// Creates a [Preview] with the target rotation and target resolution if
   /// specified.
-  void createFromInstance(
-      Preview instance, int? targetRotation, ResolutionInfo? targetResolution) {
+  void createFromInstance(Preview instance, int? targetRotation,
+      ResolutionSelector? resolutionSelector) {
     final int identifier = instanceManager.addDartCreatedInstance(instance,
         onCopy: (Preview original) {
       return Preview.detached(
           binaryMessenger: binaryMessenger,
           instanceManager: instanceManager,
-          targetRotation: original.targetRotation,
-          targetResolution: original.targetResolution);
+          initialTargetRotation: original.initialTargetRotation,
+          resolutionSelector: original.resolutionSelector);
     });
-    create(identifier, targetRotation, targetResolution);
+    create(
+        identifier,
+        targetRotation,
+        resolutionSelector == null
+            ? null
+            : instanceManager.getIdentifier(resolutionSelector));
+  }
+
+  /// Dynamically sets the target rotation of [instance] to [rotation].
+  Future<void> setTargetRotationFromInstances(Preview instance, int rotation) {
+    return setTargetRotation(
+        instanceManager.getIdentifier(instance)!, rotation);
   }
 
   /// Sets the surface provider of the specified [Preview] instance and returns
@@ -124,5 +161,11 @@ class PreviewHostApiImpl extends PreviewHostApi {
     final ResolutionInfo resolutionInfo = await getResolutionInfo(identifier!);
 
     return resolutionInfo;
+  }
+
+  /// Returns whether or not the Android surface producer automatically handles
+  /// correcting the rotation of camera previews for the device this plugin runs on.
+  Future<bool> surfaceProducerHandlesCropAndRotationFromInstance() {
+    return surfaceProducerHandlesCropAndRotation();
   }
 }

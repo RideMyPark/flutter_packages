@@ -26,8 +26,8 @@ RouteBase get $myShellRouteData => ShellRouteData.$route(
           routes: [
             GoRouteData.$route(
               path: ':id',
-              factory: $UserRouteDataExtension._fromState,
               parentNavigatorKey: UserRouteData.$parentNavigatorKey,
+              factory: $UserRouteDataExtension._fromState,
             ),
           ],
         ),
@@ -76,7 +76,7 @@ extension $UsersRouteDataExtension on UsersRouteData {
 
 extension $UserRouteDataExtension on UserRouteData {
   static UserRouteData _fromState(GoRouterState state) => UserRouteData(
-        id: int.parse(state.pathParameters['id']!),
+        id: int.parse(state.pathParameters['id']!)!,
       );
 
   String get location => GoRouteData.$location(

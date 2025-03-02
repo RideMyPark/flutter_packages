@@ -1,6 +1,16 @@
-## NEXT
+## 5.0.0
 
-* Updates minimum supported SDK version to Flutter 3.3/Dart 2.18.
+* Removes `app_shared` and `skeleton`, which are [no longer used](https://github.com/flutter/flutter/issues/160692).
+
+## 4.3.0
+
+* Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+* Creates a copy of `app_shared` named `app` (`app_shared` will no longer be used).
+
+## 4.2.1
+
+* Adds pub topics to package metadata.
+* Updates minimum supported SDK version to Flutter 3.7/Dart 2.19.
 * Updates minimum SDK version to Flutter 3.0.
 
 ## 4.2.0

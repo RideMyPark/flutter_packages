@@ -36,9 +36,11 @@ abstract class PathProviderApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   String? getApplicationDocumentsPath();
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  String? getApplicationCachePath();
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   String? getExternalStoragePath();
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  List<String?> getExternalCachePaths();
+  List<String> getExternalCachePaths();
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  List<String?> getExternalStoragePaths(StorageDirectory directory);
+  List<String> getExternalStoragePaths(StorageDirectory directory);
 }

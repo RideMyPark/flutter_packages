@@ -1,6 +1,11 @@
 # Flutter Markdown
 [![pub package](https://img.shields.io/pub/v/flutter_markdown.svg)](https://pub.dartlang.org/packages/flutter_markdown)
 
+## To be discontinued
+
+**This project will be discontinued on April 30, 2025**, and will not receive further updates after that point. Community members interested in collaborating on a community-maintained fork can coordinate in [this issue](https://github.com/flutter/flutter/issues/162966).
+
+---
 
 A markdown renderer for Flutter. It supports the
 [original format](https://daringfireball.net/projects/markdown/), but no inline
@@ -17,10 +22,10 @@ containing a rich text representation.
 the Markdown into an abstract syntax tree (AST). The nodes of the AST are an
 HTML representation of the Markdown data.
 
-## Flutter Isn't a HTML Renderer
+## Flutter Isn't an HTML Renderer
 
 While this approach to creating a rich text representation of Markdown source
-text in Flutter works well, Flutter isn't a HTML renderer like a web browser.
+text in Flutter works well, Flutter isn't an HTML renderer like a web browser.
 Markdown was developed by John Gruber in 2004 to allow users to turn readable,
 plain text content into rich text HTML. This close association with HTML allows
 for the injection of HTML into the Markdown source data. Markdown parsers
@@ -54,17 +59,32 @@ documents, respectively. GitHub Web adds header ID and emoji support. The
 Using the Markdown widget is simple, just pass in the source markdown as a
 string:
 
-    Markdown(data: markdownSource);
+<?code-excerpt "example/lib/readme_excerpts.dart (CreateMarkdown)"?>
+```dart
+const Markdown(data: markdownSource);
+```
 
 If you do not want the padding or scrolling behavior, use the MarkdownBody
 instead:
 
-    MarkdownBody(data: markdownSource);
+<?code-excerpt "example/lib/readme_excerpts.dart (CreateMarkdownBody)"?>
+```dart
+const MarkdownBody(data: markdownSource);
+```
 
 By default, Markdown uses the formatting from the current material design theme,
 but it's possible to create your own custom styling. Use the MarkdownStyle class
 to pass in your own style. If you don't want to use Markdown outside of material
 design, use the MarkdownRaw class.
+
+## Selection
+
+By default, Markdown is not selectable. A caller may use the following ways to
+customize the selection behavior of Markdown:
+
+* Set `selectable` to true, and use `onTapText` and `onSelectionChanged` to
+  handle tapping and selecting events.
+* Set `selectable` to false, and wrap Markdown with [`SelectionArea`](https://api.flutter.dev/flutter/material/SelectionArea-class.html) or [`SelectionRegion`](https://api.flutter.dev/flutter/widgets/SelectableRegion-class.html).
 
 ## Emoji Support
 
@@ -79,12 +99,13 @@ formatted output of the Markdown widget. For example, in the following Markdown
 widget constructor, a text string with a smiley face emoji is passed in as the
 source Markdown data.
 
+<?code-excerpt "example/lib/readme_excerpts.dart (CreateMarkdownWithEmoji)"?>
 ```dart
 Markdown(
-    controller: controller,
-    selectable: true,
-    data: 'Insert emoji here😀 ',
-)
+  controller: controller,
+  selectable: true,
+  data: 'Insert emoji here😀 ',
+);
 ```
 
 The resulting Markdown widget will contain a single line of text with the
@@ -100,18 +121,22 @@ auto-links, and strike-through. To include the inline emoji tag syntax
 while maintaining the default GitHub flavored Markdown behavior, define
 an extension set that combines EmojiSyntax with ExtensionSet.gitHubFlavored.
 
+<?code-excerpt "example/lib/readme_excerpts.dart (CreateMarkdownWithEmojiExtension)"?>
 ```dart
 import 'package:markdown/markdown.dart' as md;
-
-Markdown(
+// ···
+  Markdown(
     controller: controller,
     selectable: true,
     data: 'Insert emoji :smiley: here',
     extensionSet: md.ExtensionSet(
       md.ExtensionSet.gitHubFlavored.blockSyntaxes,
-      [md.EmojiSyntax(), ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes],
+      <md.InlineSyntax>[
+        md.EmojiSyntax(),
+        ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes
+      ],
     ),
-)
+  );
 ```
 
 ## Image Support

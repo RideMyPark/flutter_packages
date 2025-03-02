@@ -6,7 +6,8 @@ RouteBase get $defaultValueRoute => GoRouteData.$route(
 extension $DefaultValueRouteExtension on DefaultValueRoute {
   static DefaultValueRoute _fromState(GoRouterState state) => DefaultValueRoute(
         param:
-            _$convertMapValue('param', state.queryParameters, int.parse) ?? 0,
+            _$convertMapValue('param', state.uri.queryParameters, int.parse) ??
+                0,
       );
 
   String get location => GoRouteData.$location(
@@ -29,7 +30,7 @@ extension $DefaultValueRouteExtension on DefaultValueRoute {
 T? _$convertMapValue<T>(
   String key,
   Map<String, String> map,
-  T Function(String) converter,
+  T? Function(String) converter,
 ) {
   final value = map[key];
   return value == null ? null : converter(value);

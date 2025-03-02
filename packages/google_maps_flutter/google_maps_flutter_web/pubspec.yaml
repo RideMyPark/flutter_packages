@@ -5,8 +5,8 @@ issue_tracker: https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+
 version: 0.6.0
 
 environment:
-  sdk: ">=2.18.0 <4.0.0"
-  flutter: ">=3.3.0"
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
 
 flutter:
   plugin:
@@ -17,22 +17,29 @@ flutter:
         fileName: google_maps_flutter_web.dart
 
 dependencies:
+  collection: ^1.16.0
   flutter:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  google_maps: ^6.1.0
+  google_maps: ^8.0.0
   google_maps_flutter_platform_interface:
     git:
       url: https://github.com/RideMyPark/flutter_packages.git
-      ref: fork-google_maps-2.3.1
+      ref: fork-google_maps-2.10.1
       path: packages/google_maps_flutter/google_maps_flutter_platform_interface
   sanitize_html: ^2.0.0
   stream_transform: ^2.0.0
+  web: ">=0.5.1 <2.0.0"
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+topics:
+  - google-maps
+  - google-maps-flutter
+  - map
 
 # The example deliberately includes limited-use secrets.
 false_secrets:

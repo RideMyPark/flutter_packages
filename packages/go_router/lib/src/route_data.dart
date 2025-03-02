@@ -63,6 +63,11 @@ abstract class GoRouteData extends RouteData {
   /// Corresponds to [GoRoute.redirect].
   FutureOr<String?> redirect(BuildContext context, GoRouterState state) => null;
 
+  /// Called when this route is removed from GoRouter's route history.
+  ///
+  /// Corresponds to [GoRoute.onExit].
+  FutureOr<bool> onExit(BuildContext context, GoRouterState state) => true;
+
   /// A helper function used by generated code.
   ///
   /// Should not be used directly.
@@ -106,6 +111,9 @@ abstract class GoRouteData extends RouteData {
     FutureOr<String?> redirect(BuildContext context, GoRouterState state) =>
         factoryImpl(state).redirect(context, state);
 
+    FutureOr<bool> onExit(BuildContext context, GoRouterState state) =>
+        factoryImpl(state).onExit(context, state);
+
     return GoRoute(
       path: path,
       name: name,
@@ -114,6 +122,7 @@ abstract class GoRouteData extends RouteData {
       redirect: redirect,
       routes: routes,
       parentNavigatorKey: parentNavigatorKey,
+      onExit: onExit,
     );
   }
 
@@ -150,12 +159,21 @@ abstract class ShellRouteData extends RouteData {
         'One of `builder` or `pageBuilder` must be implemented.',
       );
 
+  /// An optional redirect function for this route.
+  ///
+  /// Subclasses must override one of [build], [buildPage], or
+  /// [redirect].
+  ///
+  /// Corresponds to [GoRoute.redirect].
+  FutureOr<String?> redirect(BuildContext context, GoRouterState state) => null;
+
   /// A helper function used by generated code.
   ///
   /// Should not be used directly.
   static ShellRoute $route<T extends ShellRouteData>({
     required T Function(GoRouterState) factory,
     GlobalKey<NavigatorState>? navigatorKey,
+    GlobalKey<NavigatorState>? parentNavigatorKey,
     List<RouteBase> routes = const <RouteBase>[],
     List<NavigatorObserver>? observers,
     String? restorationScopeId,
@@ -163,6 +181,9 @@ abstract class ShellRouteData extends RouteData {
     T factoryImpl(GoRouterState state) {
       return (_stateObjectExpando[state] ??= factory(state)) as T;
     }
+
+    FutureOr<String?> redirect(BuildContext context, GoRouterState state) =>
+        factoryImpl(state).redirect(context, state);
 
     Widget builder(
       BuildContext context,
@@ -189,10 +210,12 @@ abstract class ShellRouteData extends RouteData {
     return ShellRoute(
       builder: builder,
       pageBuilder: pageBuilder,
+      parentNavigatorKey: parentNavigatorKey,
       routes: routes,
       navigatorKey: navigatorKey,
       observers: observers,
       restorationScopeId: restorationScopeId,
+      redirect: redirect,
     );
   }
 
@@ -209,6 +232,14 @@ abstract class ShellRouteData extends RouteData {
 abstract class StatefulShellRouteData extends RouteData {
   /// Default const constructor
   const StatefulShellRouteData();
+
+  /// An optional redirect function for this route.
+  ///
+  /// Subclasses must override one of [build], [buildPage], or
+  /// [redirect].
+  ///
+  /// Corresponds to [GoRoute.redirect].
+  FutureOr<String?> redirect(BuildContext context, GoRouterState state) => null;
 
   /// [pageBuilder] is used to build the page
   Page<void> pageBuilder(
@@ -234,6 +265,7 @@ abstract class StatefulShellRouteData extends RouteData {
   static StatefulShellRoute $route<T extends StatefulShellRouteData>({
     required T Function(GoRouterState) factory,
     required List<StatefulShellBranch> branches,
+    GlobalKey<NavigatorState>? parentNavigatorKey,
     ShellNavigationContainerBuilder? navigatorContainerBuilder,
     String? restorationScopeId,
   }) {
@@ -263,20 +295,27 @@ abstract class StatefulShellRouteData extends RouteData {
           navigationShell,
         );
 
+    FutureOr<String?> redirect(BuildContext context, GoRouterState state) =>
+        factoryImpl(state).redirect(context, state);
+
     if (navigatorContainerBuilder != null) {
       return StatefulShellRoute(
         branches: branches,
         builder: builder,
         pageBuilder: pageBuilder,
         navigatorContainerBuilder: navigatorContainerBuilder,
+        parentNavigatorKey: parentNavigatorKey,
         restorationScopeId: restorationScopeId,
+        redirect: redirect,
       );
     }
     return StatefulShellRoute.indexedStack(
       branches: branches,
       builder: builder,
       pageBuilder: pageBuilder,
+      parentNavigatorKey: parentNavigatorKey,
       restorationScopeId: restorationScopeId,
+      redirect: redirect,
     );
   }
 
@@ -303,6 +342,7 @@ abstract class StatefulShellBranchData {
     List<NavigatorObserver>? observers,
     String? initialLocation,
     String? restorationScopeId,
+    bool preload = false,
   }) {
     return StatefulShellBranch(
       routes: routes,
@@ -310,6 +350,7 @@ abstract class StatefulShellBranchData {
       observers: observers,
       initialLocation: initialLocation,
       restorationScopeId: restorationScopeId,
+      preload: preload,
     );
   }
 }

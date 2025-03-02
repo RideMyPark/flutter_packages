@@ -2,11 +2,11 @@ name: google_maps_flutter
 description: A Flutter plugin for integrating Google Maps in iOS and Android applications.
 repository: https://github.com/flutter/packages/tree/main/packages/google_maps_flutter/google_maps_flutter
 issue_tracker: https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+maps%22
-version: 2.4.0
+version: 2.11.0
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.10.0"
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
 
 flutter:
   plugin:
@@ -24,29 +24,35 @@ dependencies:
   google_maps_flutter_android:
     git:
       url: https://github.com/RideMyPark/flutter_packages.git
-      ref: fork-google_maps-2.3.1
+      ref: fork-google_maps-2.10.1
       path: packages/google_maps_flutter/google_maps_flutter_android
   google_maps_flutter_ios:
     git:
       url: https://github.com/RideMyPark/flutter_packages.git
-      ref: fork-google_maps-2.3.1
+      ref: fork-google_maps-2.10.1
       path: packages/google_maps_flutter/google_maps_flutter_ios
   google_maps_flutter_platform_interface:
     git:
       url: https://github.com/RideMyPark/flutter_packages.git
-      ref: fork-google_maps-2.3.1
+      ref: fork-google_maps-2.10.1
       path: packages/google_maps_flutter/google_maps_flutter_platform_interface
   google_maps_flutter_web:
     git:
       url: https://github.com/RideMyPark/flutter_packages.git
-      ref: fork-google_maps-2.3.1
+      ref: fork-google_maps-2.10.1
       path: packages/google_maps_flutter/google_maps_flutter_web
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  plugin_platform_interface: ^2.0.0
+  leak_tracker_flutter_testing: any
+  plugin_platform_interface: ^2.1.7
   stream_transform: ^2.0.0
+
+topics:
+  - google-maps
+  - google-maps-flutter
+  - map
 
 # The example deliberately includes limited-use secrets.
 false_secrets:

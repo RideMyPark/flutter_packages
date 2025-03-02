@@ -19,17 +19,38 @@ import 'shared/generation.dart';
 
 const String _helpFlag = 'help';
 const String _formatFlag = 'format';
+const String _noFormatFlag = 'no-format';
 const String _files = 'files';
 const String _test = 'test';
 const String _example = 'example';
+const String _overflowFiller = 'overflow';
 
 const List<String> _fileGroups = <String>[_test, _example];
 
 Future<void> main(List<String> args) async {
   final ArgParser parser = ArgParser()
-    ..addFlag(_formatFlag, abbr: 'f', help: 'Autoformats after generation.')
+    ..addFlag(
+      _formatFlag,
+      abbr: 'f',
+      help:
+          'Autoformat after generation. This flag is no longer needed, as this behavior is the default',
+      defaultsTo: true,
+      hide: true,
+    )
+    ..addFlag(
+      _noFormatFlag,
+      abbr: 'n',
+      help: 'Do not autoformat after generation.',
+    )
     ..addFlag(_helpFlag,
         negatable: false, abbr: 'h', help: 'Print this reference.')
+    ..addFlag(
+      _overflowFiller,
+      abbr: 'o',
+      help:
+          'Injects 120 Enums into the pigeon ast, used for testing overflow utilities.',
+      hide: true,
+    )
     ..addMultiOption(_files,
         help:
             'Select specific groups of files to generate; $_test or $_example. Defaults to both.',
@@ -46,12 +67,16 @@ ${parser.usage}''');
 
   final String baseDir = p.dirname(p.dirname(Platform.script.toFilePath()));
 
-  final List<String>? toGenerate =
-      argResults.wasParsed(_files) ? argResults[_files] as List<String> : null;
+  final bool includeOverflow = argResults.wasParsed(_overflowFiller);
 
-  if (toGenerate == null || toGenerate.contains(_test)) {
+  final List<String> toGenerate = argResults.wasParsed(_files)
+      ? argResults[_files] as List<String>
+      : _fileGroups;
+
+  if (toGenerate.contains(_test)) {
     print('Generating platform_test/ output...');
-    final int generateExitCode = await generateTestPigeons(baseDir: baseDir);
+    final int generateExitCode = await generateTestPigeons(
+        baseDir: baseDir, includeOverflow: includeOverflow);
     if (generateExitCode == 0) {
       print('Generation complete!');
     } else {
@@ -60,7 +85,7 @@ ${parser.usage}''');
     }
   }
 
-  if (toGenerate == null || toGenerate.contains(_example)) {
+  if (toGenerate.contains(_example)) {
     print('Generating example/ output...');
     final int generateExitCode = await generateExamplePigeons();
     if (generateExitCode == 0) {
@@ -71,7 +96,7 @@ ${parser.usage}''');
     }
   }
 
-  if (argResults.wasParsed(_formatFlag)) {
+  if (!argResults.wasParsed(_noFormatFlag)) {
     print('Formatting generated output...');
     final int formatExitCode =
         await formatAllFiles(repositoryRoot: p.dirname(p.dirname(baseDir)));

@@ -164,10 +164,8 @@ class _MyAppState extends State<_MyApp> {
     }
     if (_purchasePending) {
       stack.add(
-        // TODO(goderbauer): Make this const when that's available on stable.
-        // ignore: prefer_const_constructors
-        Stack(
-          children: const <Widget>[
+        const Stack(
+          children: <Widget>[
             Opacity(
               opacity: 0.3,
               child: ModalBarrier(dismissible: false, color: Colors.grey),
@@ -286,8 +284,8 @@ class _MyAppState extends State<_MyApp> {
                           changeSubscriptionParam: (oldSubscription != null)
                               ? ChangeSubscriptionParam(
                                   oldPurchaseDetails: oldSubscription,
-                                  prorationMode:
-                                      ProrationMode.immediateWithTimeProration,
+                                  replacementMode:
+                                      ReplacementMode.withTimeProration,
                                 )
                               : null);
                     } else {

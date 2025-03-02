@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:js_util' show getProperty;
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,11 +15,8 @@ import 'package:integration_test/integration_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
+@GenerateNiceMocks(<MockSpec<dynamic>>[MockSpec<GoogleMapController>()])
 import 'google_maps_plugin_test.mocks.dart';
-
-@GenerateMocks(<Type>[], customMocks: <MockSpec<dynamic>>[
-  MockSpec<GoogleMapController>(onMissingStub: OnMissingStub.returnDefault),
-])
 
 /// Test GoogleMapsPlugin
 void main() {
@@ -194,8 +192,8 @@ void main() {
         final gmaps.MapTypeStyle style = styles[0];
         expect(style.featureType, 'poi.park');
         expect(style.elementType, 'labels.text.fill');
-        expect(style.stylers?.length, 1);
-        expect(getProperty<String>(style.stylers![0]!, 'color'), '#6b9a76');
+        expect(style.stylers.length, 1);
+        expect((style.stylers[0]['color']! as JSString).toDart, '#6b9a76');
       });
 
       testWidgets('throws MapStyleException for invalid styles',
@@ -205,28 +203,6 @@ void main() {
         expect(() async {
           await plugin.setMapStyle('invalid_style', mapId: 0);
         }, throwsA(isA<MapStyleException>()));
-      });
-    });
-
-    group('Noop methods:', () {
-      const int mapId = 0;
-      setUp(() {
-        plugin.debugSetMapById(<int, GoogleMapController>{mapId: controller});
-      });
-      // Options
-      testWidgets('updateTileOverlays', (WidgetTester tester) async {
-        final Future<void> update = plugin.updateTileOverlays(
-          mapId: mapId,
-          newTileOverlays: <TileOverlay>{},
-        );
-        expect(update, completion(null));
-      });
-      testWidgets('updateTileOverlays', (WidgetTester tester) async {
-        final Future<void> update = plugin.clearTileCache(
-          const TileOverlayId('any'),
-          mapId: mapId,
-        );
-        expect(update, completion(null));
       });
     });
 
@@ -286,6 +262,34 @@ void main() {
         await plugin.updateCircles(expectedUpdates, mapId: mapId);
 
         verify(controller.updateCircles(expectedUpdates));
+      });
+      testWidgets('updateHeatmaps', (WidgetTester tester) async {
+        final HeatmapUpdates expectedUpdates = HeatmapUpdates.from(
+          const <Heatmap>{},
+          const <Heatmap>{},
+        );
+
+        await plugin.updateHeatmaps(expectedUpdates, mapId: mapId);
+
+        verify(controller.updateHeatmaps(expectedUpdates));
+      });
+      // Tile Overlays
+      testWidgets('updateTileOverlays', (WidgetTester tester) async {
+        final Set<TileOverlay> expectedOverlays = <TileOverlay>{
+          const TileOverlay(tileOverlayId: TileOverlayId('overlay'))
+        };
+
+        await plugin.updateTileOverlays(
+            newTileOverlays: expectedOverlays, mapId: mapId);
+
+        verify(controller.updateTileOverlays(expectedOverlays));
+      });
+      testWidgets('clearTileCache', (WidgetTester tester) async {
+        const TileOverlayId tileOverlayId = TileOverlayId('Dory');
+
+        await plugin.clearTileCache(tileOverlayId, mapId: mapId);
+
+        verify(controller.clearTileCache(tileOverlayId));
       });
       // Camera
       testWidgets('animateCamera', (WidgetTester tester) async {
@@ -368,9 +372,9 @@ void main() {
       });
 
       testWidgets('isMarkerInfoWindowShown', (WidgetTester tester) async {
-        when(controller.isInfoWindowShown(any)).thenReturn(true);
-
         const MarkerId markerId = MarkerId('testing-123');
+
+        when(controller.isInfoWindowShown(markerId)).thenReturn(true);
 
         await plugin.isMarkerInfoWindowShown(markerId, mapId: mapId);
 

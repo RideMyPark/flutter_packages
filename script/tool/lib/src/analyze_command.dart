@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:io' as io;
+
 import 'package:file/file.dart';
-import 'package:yaml/yaml.dart';
 
 import 'common/output_utils.dart';
 import 'common/package_looping_command.dart';
@@ -34,12 +35,18 @@ class AnalyzeCommand extends PackageLoopingCommand {
     argParser.addFlag(_libOnlyFlag,
         help: 'Only analyze the lib/ directory of the main package, not the '
             'entire package.');
+    argParser.addFlag(_skipIfResolvingFailsFlag,
+        help: 'If resolution fails, skip the package. This is only '
+            'intended to be used with pathified analysis, where a resolver '
+            'failure indicates that no out-of-band failure can result anyway.',
+        hide: true);
   }
 
   static const String _customAnalysisFlag = 'custom-analysis';
   static const String _downgradeFlag = 'downgrade';
   static const String _libOnlyFlag = 'lib-only';
   static const String _analysisSdk = 'analysis-sdk';
+  static const String _skipIfResolvingFailsFlag = 'skip-if-resolving-fails';
 
   late String _dartBinaryPath;
 
@@ -56,9 +63,9 @@ class AnalyzeCommand extends PackageLoopingCommand {
   final bool hasLongOutput = false;
 
   /// Checks that there are no unexpected analysis_options.yaml files.
-  bool _hasUnexpecetdAnalysisOptions(RepositoryPackage package) {
+  bool _hasUnexpectedAnalysisOptions(RepositoryPackage package) {
     final List<FileSystemEntity> files =
-        package.directory.listSync(recursive: true);
+        package.directory.listSync(recursive: true, followLinks: false);
     for (final FileSystemEntity file in files) {
       if (file.basename != 'analysis_options.yaml' &&
           file.basename != '.analysis_options') {
@@ -86,18 +93,7 @@ class AnalyzeCommand extends PackageLoopingCommand {
 
   @override
   Future<void> initializeRun() async {
-    _allowedCustomAnalysisDirectories =
-        getStringListArg(_customAnalysisFlag).expand<String>((String item) {
-      if (item.endsWith('.yaml')) {
-        final File file = packagesDir.fileSystem.file(item);
-        final Object? yaml = loadYaml(file.readAsStringSync());
-        if (yaml == null) {
-          return <String>[];
-        }
-        return (yaml as YamlList).toList().cast<String>();
-      }
-      return <String>[item];
-    }).toSet();
+    _allowedCustomAnalysisDirectories = getYamlListArg(_customAnalysisFlag);
 
     // Use the Dart SDK override if one was passed in.
     final String? dartSdk = argResults![_analysisSdk] as String?;
@@ -134,12 +130,26 @@ class AnalyzeCommand extends PackageLoopingCommand {
               .pubspecFile
               .existsSync()) {
         if (!await _runPubCommand(packageToGet, 'get')) {
+          if (getBoolArg(_skipIfResolvingFailsFlag)) {
+            // Re-run, capturing output, to see if the failure was a resolver
+            // failure. (This is slightly inefficient, but this should be a
+            // very rare case.)
+            const String resolverFailureMessage = 'version solving failed';
+            final io.ProcessResult result = await processRunner.run(
+                flutterCommand, <String>['pub', 'get'],
+                workingDir: packageToGet.directory);
+            if ((result.stderr as String).contains(resolverFailureMessage) ||
+                (result.stdout as String).contains(resolverFailureMessage)) {
+              logWarning('Skipping package due to pub resolution failure.');
+              return PackageResult.skip('Resolution failed.');
+            }
+          }
           return PackageResult.fail(<String>['Unable to get dependencies']);
         }
       }
     }
 
-    if (_hasUnexpecetdAnalysisOptions(package)) {
+    if (_hasUnexpectedAnalysisOptions(package)) {
       return PackageResult.fail(<String>['Unexpected local analysis options']);
     }
     final int exitCode = await processRunner.runAndStream(_dartBinaryPath,

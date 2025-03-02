@@ -656,7 +656,7 @@
 }
 
 - (void)animateCameraWithUpdate:(nonnull FGMPlatformCameraUpdate *)cameraUpdate
-              animationDuration:(nullable NSNumber *)duration
+                       duration:(nullable NSNumber *)duration
                           error:(FlutterError *_Nullable __autoreleasing *_Nonnull)error {
   GMSCameraUpdate *update = FGMGetCameraUpdateForPigeonCameraUpdate(cameraUpdate);
   if (!update) {

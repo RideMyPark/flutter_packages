@@ -939,7 +939,7 @@ class GoogleMapController
   @Override
   public void animateCamera(
       @NonNull Messages.PlatformCameraUpdate cameraUpdate,
-      Integer animationDuration) {
+      @Nullable Long animationDuration) {
     if (googleMap == null) {
       throw new FlutterError(
           "GoogleMap uninitialized", "animateCamera called prior to map initialization", null);

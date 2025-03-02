@@ -947,10 +947,10 @@ class GoogleMapController
     if (animationDuration != null) {
       googleMap.animateCamera(
           Convert.cameraUpdateFromPigeon(cameraUpdate, density),
-          animationDuration,
+          animationDuration.intValue(),
           null);
     } else {
-      googleMap.animateCamera(cameraUpdate);
+      googleMap.animateCamera(Convert.cameraUpdateFromPigeon(cameraUpdate, density));
     }
   }
 
